@@ -33,3 +33,11 @@ waitForPort = 5000
 
 [deployment]
 run = ["sh", "-c", "export GOOGLE_CLIENT_ID=dummy-client-id && export GOOGLE_CLIENT_SECRET=dummy-client-secret && mvn spring-boot:run -Dspring-boot.run.arguments=\"--server.port=5000\""]
+
+[[ports]]
+localPort = 5000
+externalPort = 5000
+
+[[ports]]
+localPort = 35729
+externalPort = 80

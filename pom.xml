@@ -1,64 +1,54 @@
-<project>
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>mygroupid</groupId>
-  <artifactId>myartifactid</artifactId>
-  <version>0.0-SNAPSHOT</version>
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>3.2.3</version>
+    <relativePath/>
+  </parent>
+  <groupId>com.fileshare</groupId>
+  <artifactId>oneshot</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <name>OneShot File Sharing</name>
+  <description>Secure one-time file sharing web application</description>
+  <properties>
+    <java.version>17</java.version>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-security</artifactId>
-      <version>3.4.4</version>
-      <type>jar</type>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-oauth2-client</artifactId>
-      <version>3.4.4</version>
-      <type>jar</type>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-devtools</artifactId>
-      <version>3.4.4</version>
-      <type>jar</type>
+      <scope>runtime</scope>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
-      <version>3.4.4</version>
-      <type>jar</type>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-thymeleaf</artifactId>
-      <version>3.4.4</version>
-      <type>jar</type>
+    </dependency>
+    <dependency>
+      <groupId>org.thymeleaf.extras</groupId>
+      <artifactId>thymeleaf-extras-springsecurity6</artifactId>
     </dependency>
   </dependencies>
   <build>
     <plugins>
       <plugin>
-        <groupId>de.qaware.maven</groupId>
-        <artifactId>go-offline-maven-plugin</artifactId>
-        <version>1.2.5</version>
-        <configuration>
-          <dynamicDependencies>
-            <DynamicDependency>
-              <groupId>org.apache.maven.surefire</groupId>
-              <artifactId>surefire-junit4</artifactId>
-              <version>2.20.1</version>
-              <classifier></classifier>
-              <repositoryType>PLUGIN</repositoryType>
-            </DynamicDependency>
-            <DynamicDependency>
-              <groupId>com.querydsl</groupId>
-              <artifactId>querydsl-apt</artifactId>
-              <version>4.2.1</version>
-              <classifier>jpa</classifier>
-              <repositoryType>MAIN</repositoryType>
-            </DynamicDependency>
-          </dynamicDependencies>
-        </configuration>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </build>

@@ -64,7 +64,7 @@ public class FileController {
 
         try {
             // Generate connection code
-            String connectionCode = connectionCodeService.generateConnectionCode();
+            String connectionCode = connectionCodeService.generateConnectionCode(fileService.countActiveFiles());
             
             // Store file metadata and actual file
             FileMetadata fileMetadata = fileService.saveFileMetadata(

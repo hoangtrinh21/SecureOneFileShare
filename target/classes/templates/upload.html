@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload File - OneShot</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+    <div class="header">
+        <h1>OneShot</h1>
+        <p>Secure One-Time File Sharing</p>
+    </div>
+    
+    <div class="container">
+        <div class="user-info">
+            <p>Signed in as <span th:text="${name}"></span> (<span th:text="${email}"></span>)</p>
+            <div class="nav-links">
+                <a href="/" class="btn btn-outline">Home</a>
+                <a href="/download" class="btn btn-outline">Download File</a>
+                <a href="/logout" class="btn btn-outline">Sign Out</a>
+            </div>
+        </div>
+        
+        <div id="uploadSection" class="card">
+            <h2>Upload a File</h2>
+            <p>The file will be available for download for 10 minutes after upload.</p>
+            
+            <div class="alert alert-warning">
+                <strong>Note:</strong> File size limit is 2MB. After download, the file will be automatically deleted.
+            </div>
+            
+            <form id="uploadForm" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="fileInput" class="file-upload-wrapper">
+                        <div class="file-upload-btn">Select File</div>
+                        <input type="file" id="fileInput" name="file" required>
+                    </label>
+                </div>
+                
+                <div class="file-info">
+                    <p>Selected File: <span id="fileName">No file selected</span></p>
+                    <p>Size: <span id="fileSize"></span></p>
+                </div>
+                
+                <div id="errorMessage" class="alert alert-danger hidden"></div>
+                
+                <div class="form-group">
+                    <button type="submit" id="uploadButton" class="btn" disabled>Upload</button>
+                </div>
+                
+                <div id="uploadProgress" class="hidden">
+                    <div class="spinner"></div> Uploading your file...
+                </div>
+            </form>
+        </div>
+        
+        <div id="resultSection" class="card hidden">
+            <h2>Upload Successful!</h2>
+            <p>Share this connection code with the recipient:</p>
+            
+            <div class="code-display" id="connectionCode"></div>
+            
+            <div class="alert alert-warning">
+                <strong>Important:</strong>
+                <ul>
+                    <li>This code will expire in 10 minutes</li>
+                    <li>The file can only be downloaded once</li>
+                    <li>You cannot download your own file</li>
+                </ul>
+            </div>
+            
+            <button id="copyButton" class="btn">Copy Code</button>
+            <a href="/upload" class="btn btn-outline">Upload Another File</a>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; 2023 OneShot - Secure One-Time File Sharing</p>
+        </div>
+    </div>
+    
+    <script th:src="@{/js/upload.js}"></script>
+</body>
+</html>
