@@ -5,6 +5,7 @@
 /home/runner/workspace/src/main/java/com/fileshare/oneshot/util/ConnectionCodeGenerator.java
 /home/runner/workspace/src/main/java/com/fileshare/oneshot/scheduler/FileCleanupScheduler.java
 /home/runner/workspace/src/main/java/com/fileshare/oneshot/config/OAuthSuccessHandler.java
+/home/runner/workspace/src/main/java/com/fileshare/oneshot/config/OAuthConfig.java
 /home/runner/workspace/src/main/java/com/fileshare/oneshot/repository/FileMetadataRepository.java
 /home/runner/workspace/src/main/java/com/fileshare/oneshot/controller/FileController.java
 /home/runner/workspace/src/main/java/com/fileshare/oneshot/model/FailedAttempt.java
