@@ -26,21 +26,20 @@ public class WebSecurityConfig {
         http
             .authorizeRequests(authorizeRequests ->
                 authorizeRequests
-                    .requestMatchers("/", "/css/**", "/js/**", "/favicon.ico").permitAll() // Chỉ cho phép trang chủ và tài nguyên tĩnh
-                    .requestMatchers("/login/oauth2/code/google").permitAll() // Cho phép callback URL không cần xác thực
-                    .requestMatchers("/login/oauth2/code/**").permitAll() // Cho phép tất cả các URL callback OAuth
-                    .requestMatchers("/oauth2/**").permitAll() // Cho phép tất cả các URL OAuth
-                    .requestMatchers("/download").permitAll() // Cho phép trang nhập mã download
-                    .requestMatchers("/api/download").permitAll() // Cho phép API kiểm tra mã kết nối
-                    .requestMatchers("/api/download/**").permitAll() // Cho phép API tải xuống tệp
-                    .anyRequest().authenticated() // Yêu cầu xác thực cho tất cả các URL khác (bao gồm /upload)
+                    .requestMatchers("/", "/css/**", "/js/**", "/favicon.ico").permitAll() // Only allow homepage and static resources
+                    .requestMatchers("/login/oauth2/code/google").permitAll() // Allow callback URL without authentication
+                    .requestMatchers("/login/oauth2/code/**").permitAll() // Allow all OAuth callback URLs
+                    .requestMatchers("/oauth2/**").permitAll() // Allow all OAuth URLs
+                    .requestMatchers("/download").permitAll() // Allow download page view
+                    .requestMatchers("/api/download/**").authenticated() // Require authentication for download APIs
+                    .anyRequest().authenticated() // Require authentication for all other URLs (including /upload)
             )
             .oauth2Login(oauth2Login ->
                 oauth2Login
                     .loginPage("/")
-                    .defaultSuccessUrl("/", true) // Luôn chuyển về trang chủ sau khi đăng nhập thành công
+                    .defaultSuccessUrl("/", true) // Always redirect to homepage after successful login
                     .successHandler(oAuthSuccessHandler)
-                    .failureUrl("/?error=oauth_failure") // URL khi đăng nhập thất bại
+                    .failureUrl("/?error=oauth_failure") // URL when login fails
                     .permitAll()
             )
             .logout(logout ->
@@ -54,7 +53,7 @@ public class WebSecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.ALWAYS))
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()));
-        
+
         return http.build();
     }
 

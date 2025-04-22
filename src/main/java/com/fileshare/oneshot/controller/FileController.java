@@ -95,12 +95,17 @@ public class FileController {
             @AuthenticationPrincipal OAuth2User principal,
             HttpServletRequest request) {
         
+        // Check authentication
+        if (principal == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication required");
+        }
+        
         String connectionCode = payload.get("connectionCode");
         if (connectionCode == null || connectionCode.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Connection code is required");
         }
         
-        String userEmail = principal != null ? principal.getAttribute("email") : null;
+        String userEmail = principal.getAttribute("email");
         String ipAddress = request.getRemoteAddr();
         
         // Check if user is locked out
