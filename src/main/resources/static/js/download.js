@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
         errorMessage.classList.add('hidden');
         
         // Verify the connection code
-        fetch('/download', {
+        fetch('/api/download', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
