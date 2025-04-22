@@ -88,11 +88,16 @@ public class FileController {
         }
     }
 
-    @PostMapping("/download/verify")
+    @PostMapping("/download")
     public ResponseEntity<Map<String, Object>> verifyConnectionCode(
-            @RequestParam("connectionCode") String connectionCode,
+            @RequestBody Map<String, String> payload,
             @AuthenticationPrincipal OAuth2User principal,
             HttpServletRequest request) {
+        
+        String connectionCode = payload.get("connectionCode");
+        if (connectionCode == null || connectionCode.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Connection code is required");
+        }
         
         String userEmail = principal != null ? principal.getAttribute("email") : null;
         String ipAddress = request.getRemoteAddr();

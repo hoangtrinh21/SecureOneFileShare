@@ -48,7 +48,7 @@ task = "packager.installForAll"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python app.py"
-waitForPort = 5000
+waitForPort = 5001
 
 [deployment]
 run = ["sh", "-c", "mvn spring-boot:run -Dspring-boot.run.arguments=\"--server.port=5000\""]
@@ -56,6 +56,10 @@ run = ["sh", "-c", "mvn spring-boot:run -Dspring-boot.run.arguments=\"--server.p
 [[ports]]
 localPort = 5000
 externalPort = 5000
+
+[[ports]]
+localPort = 5001
+externalPort = 3000
 
 [[ports]]
 localPort = 35729

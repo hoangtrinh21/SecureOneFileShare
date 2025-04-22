@@ -390,4 +390,5 @@ if __name__ == '__main__':
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     
     # Chạy ứng dụng trên host 0.0.0.0 để có thể truy cập từ bên ngoài
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    # Sử dụng cổng 5001 để tránh xung đột với ứng dụng Spring Boot
+    app.run(host='0.0.0.0', port=5001, debug=True)

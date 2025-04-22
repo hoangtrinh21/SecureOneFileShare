@@ -26,11 +26,14 @@ public class WebSecurityConfig {
         http
             .authorizeRequests(authorizeRequests ->
                 authorizeRequests
-                    .requestMatchers("/", "/download", "/download/**", "/api/download/**", "/css/**", "/js/**", "/favicon.ico").permitAll()
+                    .requestMatchers("/", "/css/**", "/js/**", "/favicon.ico").permitAll() // Chỉ cho phép trang chủ và tài nguyên tĩnh
                     .requestMatchers("/login/oauth2/code/google").permitAll() // Cho phép callback URL không cần xác thực
                     .requestMatchers("/login/oauth2/code/**").permitAll() // Cho phép tất cả các URL callback OAuth
                     .requestMatchers("/oauth2/**").permitAll() // Cho phép tất cả các URL OAuth
-                    .anyRequest().authenticated()
+                    .requestMatchers("/download").permitAll() // Cho phép trang nhập mã download
+                    .requestMatchers("/api/download").permitAll() // Cho phép API kiểm tra mã kết nối
+                    .requestMatchers("/api/download/**").permitAll() // Cho phép API tải xuống tệp
+                    .anyRequest().authenticated() // Yêu cầu xác thực cho tất cả các URL khác (bao gồm /upload)
             )
             .oauth2Login(oauth2Login ->
                 oauth2Login
