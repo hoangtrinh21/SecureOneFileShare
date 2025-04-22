@@ -63,7 +63,7 @@ public class WebSecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList(
             "https://accounts.google.com", 
-            "https://406ebfde-f841-4fef-babf-ecfd5bb1766c-00-25zqc6tgeci9y.picard.replit.dev"));
+            "http://localhost:5000"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("authorization", "content-type", "x-auth-token"));
         configuration.setAllowCredentials(true);

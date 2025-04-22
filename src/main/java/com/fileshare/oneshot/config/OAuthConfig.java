@@ -26,7 +26,7 @@ public class OAuthConfig {
             .clientSecret("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") // ĐANG SỬ DỤNG CLIENT SECRET TỪ LOG
             .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
             .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-            .redirectUri("https://406ebfde-f841-4fef-babf-ecfd5bb1766c-00-25zqc6tgeci9y.picard.replit.dev/login/oauth2/code/google")
+            .redirectUri("http://localhost:5000/login/oauth2/code/google")
             .scope("openid", "profile", "email")
             .authorizationUri("https://accounts.google.com/o/oauth2/v2/auth")
             .tokenUri("https://oauth2.googleapis.com/token")
