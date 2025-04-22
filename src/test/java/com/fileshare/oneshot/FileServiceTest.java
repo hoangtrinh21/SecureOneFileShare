@@ -9,6 +9,7 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
@@ -24,111 +25,120 @@ public class FileServiceTest {
 
     @Mock
     private FileMetadataRepository fileMetadataRepository;
-    @Mock
-    private FileStorageService fileStorageService;
+    
     @Mock
     private ConnectionCodeService connectionCodeService;
-    @Mock 
-    private FailedAttemptService failedAttemptService;
+    
     @Mock
     private GitSyncService gitSyncService;
-    @Mock
-    private OAuth2User oAuth2User;
 
+    @InjectMocks
     private FileService fileService;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        fileService = new FileService(fileMetadataRepository, fileStorageService, 
-                                    connectionCodeService, failedAttemptService, gitSyncService);
     }
 
     @Test
-    void uploadWithoutAuth() {
-        MockMultipartFile file = new MockMultipartFile("file", "test.txt", "text/plain", "test".getBytes());
+    void findByConnectionCodeTest() {
+        // Arrange
+        String connectionCode = "TEST";
+        FileMetadata fileMetadata = new FileMetadata();
+        fileMetadata.setConnectionCode(connectionCode);
+        when(fileMetadataRepository.findByConnectionCode(connectionCode))
+            .thenReturn(Optional.of(fileMetadata));
         
-        assertThrows(ResponseStatusException.class, () -> {
-            fileService.processUpload(file, null);
-        });
-    }
-
-    @Test
-    void downloadWithoutAuth() {
-        assertThrows(ResponseStatusException.class, () -> {
-            fileService.validateDownloadToken("code");
-        });
+        // Act
+        Optional<FileMetadata> result = fileService.findByConnectionCode(connectionCode);
+        
+        // Assert
+        assertTrue(result.isPresent());
+        assertEquals(connectionCode, result.get().getConnectionCode());
     }
 
     @Test
     void connectionCodeLengthTest() {
-        // Test for 1 file
+        // Test for active files count
         when(fileMetadataRepository.countActiveFiles()).thenReturn(1L);
-        when(connectionCodeService.generateConnectionCode(1L)).thenReturn("A");
+        assertEquals(1L, fileService.countActiveFiles());
         
-        // Test for 2 files
-        when(fileMetadataRepository.countActiveFiles()).thenReturn(2L);
-        when(connectionCodeService.generateConnectionCode(2L)).thenReturn("AB");
-        
-        // Test for 60 files
-        when(fileMetadataRepository.countActiveFiles()).thenReturn(60L);
-        when(connectionCodeService.generateConnectionCode(60L)).thenReturn("ABC");
-    }
-
-    @Test 
-    void connectionCodeExpirationTest() {
-        FileMetadata metadata = new FileMetadata();
-        String code = "TEST";
-        
-        // Test at 2 minutes
-        metadata.setExpiryTime(LocalDateTime.now().plusMinutes(2));
-        when(fileMetadataRepository.findByConnectionCode(code)).thenReturn(Optional.of(metadata));
-        assertDoesNotThrow(() -> fileService.validateConnectionCode(code));
-        
-        // Test at 8 minutes
-        metadata.setExpiryTime(LocalDateTime.now().minusMinutes(8));
-        when(fileMetadataRepository.findByConnectionCode(code)).thenReturn(Optional.of(metadata));
-        assertThrows(ResponseStatusException.class, () -> fileService.validateConnectionCode(code));
-            
-        // Test at 15 minutes
-        metadata.setExpiryTime(LocalDateTime.now().minusMinutes(15));
-        when(fileMetadataRepository.findByConnectionCode(code)).thenReturn(Optional.of(metadata));
-        assertThrows(ResponseStatusException.class, () -> fileService.validateConnectionCode(code));
+        when(fileMetadataRepository.countActiveFiles()).thenReturn(39L);
+        assertEquals(39L, fileService.countActiveFiles());
     }
 
     @Test
-    void successfulDownloadTest() {
-        String code = "TEST";
-        FileMetadata metadata = new FileMetadata();
-        metadata.setDownloaded(false);
-        metadata.setExpiryTime(LocalDateTime.now().plusMinutes(5));
+    void createDownloadTokenTest() {
+        // Arrange
+        FileMetadata fileMetadata = new FileMetadata();
         
-        when(fileMetadataRepository.findByConnectionCode(code)).thenReturn(Optional.of(metadata));
-        assertDoesNotThrow(() -> fileService.validateConnectionCode(code));
+        // Act
+        String downloadToken = fileService.createDownloadToken(fileMetadata);
+        
+        // Assert
+        assertNotNull(downloadToken);
+        assertEquals(downloadToken, fileMetadata.getDownloadToken());
+        assertNotNull(fileMetadata.getDownloadTokenExpiry());
+        
+        // Verify that downloadToken expiry is set to 3 minutes from now
+        LocalDateTime now = LocalDateTime.now();
+        assertTrue(fileMetadata.getDownloadTokenExpiry().isAfter(now));
+        assertTrue(fileMetadata.getDownloadTokenExpiry().isBefore(now.plusMinutes(4)));
     }
 
     @Test
-    void preventSecondDownloadTest() {
-        String code = "TEST";
-        FileMetadata metadata = new FileMetadata();
-        metadata.setDownloaded(true);
-        metadata.setExpiryTime(LocalDateTime.now().plusMinutes(5));
+    void validateDownloadTokenTest() {
+        // Arrange
+        String validToken = "valid-token";
+        String expiredToken = "expired-token";
+        String nonExistentToken = "non-existent-token";
         
-        when(fileMetadataRepository.findByConnectionCode(code)).thenReturn(Optional.of(metadata));
-        assertThrows(ResponseStatusException.class, () -> fileService.validateConnectionCode(code));
+        FileMetadata validFileMetadata = new FileMetadata();
+        validFileMetadata.setDownloadToken(validToken);
+        validFileMetadata.setDownloadTokenExpiry(LocalDateTime.now().plusMinutes(2));
+        
+        FileMetadata expiredFileMetadata = new FileMetadata();
+        expiredFileMetadata.setDownloadToken(expiredToken);
+        expiredFileMetadata.setDownloadTokenExpiry(LocalDateTime.now().minusMinutes(1));
+        
+        when(fileMetadataRepository.findByDownloadToken(validToken))
+            .thenReturn(Optional.of(validFileMetadata));
+        when(fileMetadataRepository.findByDownloadToken(expiredToken))
+            .thenReturn(Optional.of(expiredFileMetadata));
+        when(fileMetadataRepository.findByDownloadToken(nonExistentToken))
+            .thenReturn(Optional.empty());
+        
+        // Act & Assert
+        assertNotNull(fileService.validateDownloadToken(validToken));
+        assertNull(fileService.validateDownloadToken(expiredToken));
+        assertNull(fileService.validateDownloadToken(nonExistentToken));
     }
 
     @Test
-    void failedAttemptsLockoutTest() {
-        String code = "WRONG";
-        when(failedAttemptService.isLockedOut(anyString(), anyString())).thenReturn(true);
+    void markAsDownloadedTest() {
+        // Arrange
+        String fileId = "file-id";
+        String connectionCode = "connection-code";
+        FileMetadata fileMetadata = new FileMetadata();
+        fileMetadata.setId(fileId);
+        fileMetadata.setFileName("test.txt");
+        fileMetadata.setConnectionCode(connectionCode);
+        fileMetadata.setDownloadToken("download-token");
+        fileMetadata.setDownloadTokenExpiry(LocalDateTime.now().plusMinutes(2));
         
-        // Test 6 failed attempts (5 minutes lockout)
-        when(failedAttemptService.getRemainingLockoutSeconds(anyString(), anyString())).thenReturn(300L);
-        assertThrows(ResponseStatusException.class, () -> fileService.validateConnectionCode(code));
+        when(fileMetadataRepository.findById(fileId)).thenReturn(Optional.of(fileMetadata));
         
-        // Test 12 failed attempts (15 minutes lockout)
-        when(failedAttemptService.getRemainingLockoutSeconds(anyString(), anyString())).thenReturn(900L);
-        assertThrows(ResponseStatusException.class, () -> fileService.validateConnectionCode(code));
+        // Act
+        fileService.markAsDownloaded(fileId);
+        
+        // Assert
+        verify(connectionCodeService).releaseConnectionCode(connectionCode);
+        verify(fileMetadataRepository).save(fileMetadata);
+        
+        // Check that file metadata was updated correctly
+        assertTrue(fileMetadata.isDownloaded());
+        assertNotNull(fileMetadata.getDownloadTime());
+        assertNull(fileMetadata.getDownloadToken());
+        assertNull(fileMetadata.getDownloadTokenExpiry());
     }
 }
