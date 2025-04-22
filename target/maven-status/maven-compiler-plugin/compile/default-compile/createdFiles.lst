@@ -10,8 +10,8 @@ com/fileshare/oneshot/model/FileMetadata.class
 com/fileshare/oneshot/controller/HomeController.class
 com/fileshare/oneshot/model/FailedAttempt.class
 com/fileshare/oneshot/config/OAuthSuccessHandler.class
-com/fileshare/oneshot/scheduler/FileCleanupScheduler.class
 com/fileshare/oneshot/config/WebSecurityConfig.class
+com/fileshare/oneshot/scheduler/FileCleanupScheduler.class
 com/fileshare/oneshot/controller/FileController.class
 com/fileshare/oneshot/service/ConnectionCodeService.class
 com/fileshare/oneshot/service/FileService.class

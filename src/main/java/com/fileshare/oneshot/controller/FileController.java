@@ -123,6 +123,13 @@ public class FileController {
         if (fileMetadataOpt.isEmpty()) {
             // Record failed attempt
             failedAttemptService.recordFailedAttempt(userEmail, ipAddress);
+            if (failedAttemptService.isLockedOut(userEmail, ipAddress)) {
+                long lockoutTimeSeconds = failedAttemptService.getRemainingLockoutSeconds(userEmail, ipAddress);
+                Map<String, Object> response = new HashMap<>();
+                response.put("error", "Too many failed attempts");
+                response.put("lockedOutFor", lockoutTimeSeconds);
+                return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(response);
+            }
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Invalid connection code");
         }
         

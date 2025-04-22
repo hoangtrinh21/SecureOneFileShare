@@ -1,171 +1,199 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const downloadForm = document.getElementById('download-form');
-    const downloadFormContainer = document.getElementById('download-form-container');
-    const lockoutContainer = document.getElementById('lockout-container');
-    const lockoutTimer = document.getElementById('lockout-timer');
-    const fileInfoContainer = document.getElementById('file-info-container');
-    const fileName = document.getElementById('file-name');
-    const fileSize = document.getElementById('file-size');
-    const expirationTimer = document.getElementById('expiration-timer');
-    const downloadButton = document.getElementById('download-button');
-    const downloadError = document.getElementById('download-error');
-    const errorMessage = document.getElementById('error-message');
-    const tryAgain = document.getElementById('try-again');
-    
+    const codeForm = document.getElementById('codeForm');
+    const connectionCodeInput = document.getElementById('connectionCodeInput');
+    const verifyButton = document.getElementById('verifyButton');
+    const fileInfoSection = document.getElementById('fileInfoSection');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const downloadButton = document.getElementById('downloadButton');
+    const errorMessage = document.getElementById('errorMessage');
+    const lockoutMessage = document.getElementById('lockoutMessage');
+    const lockoutTimer = document.getElementById('lockoutTimer');
+
+    // Check URL for connectionCode parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const codeParam = urlParams.get('code');
+    if (codeParam) {
+        connectionCodeInput.value = codeParam;
+    }
+
+    // Hide file info section initially
+    fileInfoSection.classList.add('hidden');
+
     let downloadToken = null;
-    let connectionCode = null;
-    
-    // Xử lý form nhập mã kết nối
-    downloadForm.addEventListener('submit', function(e) {
+    let countdownInterval = null;
+
+    // Handle form submission
+    codeForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        
-        const formData = new FormData(downloadForm);
-        connectionCode = formData.get('connectionCode');
-        
-        if (!connectionCode) {
-            showError('Vui lòng nhập mã kết nối.');
+
+        const code = connectionCodeInput.value.trim();
+        if (!code) {
+            errorMessage.textContent = "Please enter a connection code";
+            errorMessage.classList.remove('hidden');
             return;
         }
-        
-        // Gửi yêu cầu kiểm tra mã kết nối
+
+        // Disable button and show loading
+        verifyButton.disabled = true;
+        verifyButton.innerHTML = '<span class="spinner"></span> Verifying...';
+        errorMessage.classList.add('hidden');
+
+        // Verify the connection code
         fetch('/api/download', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-                connectionCode: connectionCode
-            })
+            body: JSON.stringify({connectionCode: code})
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                // Xử lý lỗi
-                if (data.lockoutRemaining) {
-                    // Hiển thị thời gian khóa
-                    showLockoutTimer(data.lockoutRemaining);
-                } else {
-                    showError(data.error);
+        .then(response => {
+            if (!response.ok) {
+                if (response.status === 429) {
+                    // Handle rate limiting (too many attempts)
+                    return response.json().then(data => {
+                        throw new Error(`too_many_requests:${data.lockedOutFor}`);
+                    });
                 }
-                return;
+                return response.text().then(text => {
+                    throw new Error(text);
+                });
             }
-            
-            // Hiển thị thông tin tệp
-            fileName.textContent = data.filename;
-            fileSize.textContent = formatFileSize(data.size);
+            return response.json();
+        })
+        .then(data => {
+            // Hide error message
+            errorMessage.classList.add('hidden');
+
+            // Show file info section
+            fileInfoSection.classList.remove('hidden');
+
+            // Display file information
+            fileName.textContent = data.fileName;
+            fileSize.textContent = formatFileSize(data.fileSize);
+
+            // Store download token
             downloadToken = data.downloadToken;
-            
-            // Ẩn form và hiển thị thông tin tệp
-            downloadFormContainer.classList.add('hidden');
-            fileInfoContainer.classList.remove('hidden');
-            
-            // Bắt đầu đếm ngược thời gian hết hạn tải xuống
-            startExpirationCountdown(new Date(data.downloadExpiresAt));
+
+            // Start download token expiration countdown (3 minutes)
+            startExpirationCountdown();
+
+            // Enable download button
+            downloadButton.disabled = false;
         })
         .catch(error => {
-            console.error('Lỗi:', error);
-            showError('Có lỗi xảy ra khi kết nối đến máy chủ. Vui lòng thử lại sau.');
+            // Handle errors
+            if (error.message.startsWith('too_many_requests:')) {
+                // Handle lockout
+                const lockoutSeconds = error.message.split(':')[1];
+                showLockoutTimer(parseInt(lockoutSeconds));
+            } else {
+                // Handle error response
+                if (error.response) {
+                    errorMessage.textContent = `Error: ${error.response.status}`;
+                    errorMessage.classList.remove('hidden');
+                } else {
+                    // Show regular error message
+                    errorMessage.textContent = "Error: 404";
+                    errorMessage.classList.remove('hidden');
+                }
+            }
+
+            // Reset button
+            verifyButton.disabled = false;
+            verifyButton.innerHTML = 'Verify';
         });
     });
-    
-    // Xử lý nút tải xuống
+
+    // Handle download button
     downloadButton.addEventListener('click', function() {
-        if (!downloadToken || !connectionCode) {
-            showError('Không có thông tin tải xuống hợp lệ.');
+        if (!downloadToken) {
+            errorMessage.textContent = "Download token is missing or expired";
+            errorMessage.classList.remove('hidden');
             return;
         }
-        
-        // Chuyển hướng đến đường dẫn tải xuống
-        window.location.href = `/api/download/${downloadToken}/${connectionCode}`;
+
+        // Initiate download
+        window.location.href = `/api/download?token=${encodeURIComponent(downloadToken)}`;
+
+        // Disable download after clicking
+        downloadButton.disabled = true;
+        downloadButton.innerHTML = 'Downloaded';
+
+        // Clear token after download initiated
+        downloadToken = null;
+
+        // Clear countdown
+        if (countdownInterval) {
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+        }
     });
-    
-    // Xử lý nút thử lại
-    tryAgain.addEventListener('click', function() {
-        // Đặt lại trạng thái
-        downloadForm.reset();
-        
-        // Ẩn thông báo lỗi và hiển thị form
-        downloadError.classList.add('hidden');
-        downloadFormContainer.classList.remove('hidden');
-    });
-    
-    // Hàm định dạng kích thước tệp
+
+    // Format file size function
     function formatFileSize(bytes) {
         if (bytes === 0) return '0 Bytes';
-        
+
         const k = 1024;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
         const i = Math.floor(Math.log(bytes) / Math.log(k));
-        
+
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
-    
-    // Hàm đếm ngược thời gian hết hạn
-    function startExpirationCountdown(expirationDate) {
-        function updateTimer() {
-            const now = new Date();
-            const diff = expirationDate - now;
-            
-            if (diff <= 0) {
-                // Hết hạn
-                expirationTimer.textContent = '00:00';
-                showError('Liên kết tải xuống đã hết hạn. Vui lòng yêu cầu một mã kết nối mới.');
-                fileInfoContainer.classList.add('hidden');
-                return;
+
+    // Start the expiration countdown for download token (3 minutes)
+    function startExpirationCountdown() {
+        let secondsLeft = 3 * 60; // 3 minutes
+
+        // Clear any existing interval
+        if (countdownInterval) {
+            clearInterval(countdownInterval);
+        }
+
+        countdownInterval = setInterval(() => {
+            secondsLeft--;
+
+            if (secondsLeft <= 0) {
+                clearInterval(countdownInterval);
+                downloadToken = null;
+                downloadButton.disabled = true;
+                downloadButton.innerHTML = 'Link Expired';
+                errorMessage.textContent = "Download link has expired";
+                errorMessage.classList.remove('hidden');
             }
-            
-            // Tính toán phút và giây
-            const minutes = Math.floor(diff / 60000);
-            const seconds = Math.floor((diff % 60000) / 1000);
-            
-            // Định dạng thời gian
-            expirationTimer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            
-            // Cập nhật mỗi giây
-            setTimeout(updateTimer, 1000);
-        }
-        
-        // Bắt đầu đếm ngược
-        updateTimer();
-    }
-    
-    // Hàm hiển thị thời gian khóa
-    function showLockoutTimer(seconds) {
-        downloadFormContainer.classList.add('hidden');
-        lockoutContainer.classList.remove('hidden');
-        
-        updateLockoutTimer(seconds);
-    }
-    
-    // Hàm cập nhật thời gian khóa
-    function updateLockoutTimer(seconds) {
-        if (seconds <= 0) {
-            // Hết thời gian khóa
-            lockoutContainer.classList.add('hidden');
-            downloadFormContainer.classList.remove('hidden');
-            return;
-        }
-        
-        // Tính toán phút và giây
-        const minutes = Math.floor(seconds / 60);
-        const remainingSeconds = seconds % 60;
-        
-        // Định dạng thời gian
-        lockoutTimer.textContent = `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-        
-        // Cập nhật mỗi giây
-        setTimeout(() => {
-            updateLockoutTimer(seconds - 1);
         }, 1000);
     }
-    
-    // Hàm hiển thị lỗi
-    function showError(message) {
-        errorMessage.textContent = message;
-        
-        downloadFormContainer.classList.add('hidden');
-        fileInfoContainer.classList.add('hidden');
-        lockoutContainer.classList.add('hidden');
-        downloadError.classList.remove('hidden');
+
+    // Show lockout timer
+    function showLockoutTimer(seconds) {
+        lockoutMessage.classList.remove('hidden');
+        errorMessage.classList.add('hidden');
+
+        updateLockoutTimer(seconds);
+
+        const lockoutInterval = setInterval(() => {
+            seconds--;
+
+            if (seconds <= 0) {
+                clearInterval(lockoutInterval);
+                lockoutMessage.classList.add('hidden');
+                verifyButton.disabled = false;
+                verifyButton.innerHTML = 'Verify';
+            } else {
+                updateLockoutTimer(seconds);
+            }
+        }, 1000);
+    }
+
+    // Update lockout timer display
+    function updateLockoutTimer(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        lockoutTimer.textContent = `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+
+    // If code parameter was in URL, automatically submit the form
+    if (codeParam) {
+        codeForm.dispatchEvent(new Event('submit'));
     }
 });

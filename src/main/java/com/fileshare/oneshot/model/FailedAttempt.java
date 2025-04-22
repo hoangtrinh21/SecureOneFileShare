@@ -75,22 +75,11 @@ public class FailedAttempt {
     public void incrementAttempt() {
         this.attemptCount++;
         this.lastAttemptTime = LocalDateTime.now();
-        
-        if (this.attemptCount % 3 == 0) {
-            int minutes = calculateLockoutMinutes();
-            this.lockoutUntil = LocalDateTime.now().plusMinutes(minutes);
-        }
-    }
 
-    private int calculateLockoutMinutes() {
-        int failedSets = this.attemptCount / 3;
-        if (failedSets == 1) {
-            return 2; // First lockout: 2 minutes
-        } else {
-            // Calculate lockout time: previous lockout time * 2
-            // For second set: 2*2=4 minutes
-            // For third set: 4*2=8 minutes, etc.
-            return (int) Math.pow(2, failedSets);
+        if (this.attemptCount % 3 == 0) {
+            int failedSets = this.attemptCount / 3;
+            int minutes = (int) Math.pow(2, failedSets); // 2^1=2 phút cho 3 lần, 2^2=4 phút cho 6 lần,...
+            this.lockoutUntil = LocalDateTime.now().plusMinutes(minutes);
         }
     }
 

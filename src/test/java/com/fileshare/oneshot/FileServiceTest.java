@@ -5,8 +5,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
+import com.fileshare.oneshot.model.FailedAttempt;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -140,5 +142,35 @@ public class FileServiceTest {
         assertNotNull(fileMetadata.getDownloadTime());
         assertNull(fileMetadata.getDownloadToken());
         assertNull(fileMetadata.getDownloadTokenExpiry());
+    }
+
+    /**
+     * Kiểm tra logic thời gian khóa tài khoản khi có các lần đăng nhập thất bại.
+     * Xác minh thời gian khóa tăng lên đúng dựa trên số lần thử không thành công.
+     */
+    @Test
+    public void testLockoutDuration() {
+        FailedAttempt attempt = new FailedAttempt("test@example.com", "127.0.0.1");
+
+        // Simulate 6 failed attempts (2 sets of 3)
+        for (int i = 0; i < 6; i++) {
+            attempt.incrementAttempt();
+        }
+
+        LocalDateTime lockoutTime = attempt.getLockoutUntil();
+        LocalDateTime expectedTime = attempt.getLastAttemptTime().plusMinutes(4); // 2nd set = 4 minutes
+        assertEquals(0, ChronoUnit.SECONDS.between(expectedTime, lockoutTime));
+
+        // Reset for testing 12 attempts
+        attempt = new FailedAttempt("test@example.com", "127.0.0.1");
+
+        // Simulate 12 failed attempts (4 sets of 3)
+        for (int i = 0; i < 12; i++) {
+            attempt.incrementAttempt();
+        }
+
+        lockoutTime = attempt.getLockoutUntil();
+        expectedTime = attempt.getLastAttemptTime().plusMinutes(16); // 4th set = 16 minutes
+        assertEquals(0, ChronoUnit.SECONDS.between(expectedTime, lockoutTime));
     }
 }
