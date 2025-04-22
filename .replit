@@ -1,4 +1,4 @@
-modules = ["java", "java-17"]
+modules = ["java", "java-17", "python-3.11"]
 
 [nix]
 channel = "stable-24_05"
@@ -28,11 +28,11 @@ task = "packager.installForAll"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "export GOOGLE_CLIENT_ID=dummy-client-id && export GOOGLE_CLIENT_SECRET=dummy-client-secret && mvn spring-boot:run -Dspring-boot.run.arguments=\"--server.port=5000\""
+args = "mvn spring-boot:run -Dspring-boot.run.arguments=\"--server.port=5000\""
 waitForPort = 5000
 
 [deployment]
-run = ["sh", "-c", "export GOOGLE_CLIENT_ID=dummy-client-id && export GOOGLE_CLIENT_SECRET=dummy-client-secret && mvn spring-boot:run -Dspring-boot.run.arguments=\"--server.port=5000\""]
+run = ["sh", "-c", "mvn spring-boot:run -Dspring-boot.run.arguments=\"--server.port=5000\""]
 
 [[ports]]
 localPort = 5000
