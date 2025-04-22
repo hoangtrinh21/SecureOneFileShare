@@ -23,8 +23,8 @@ public class FileService {
     @Autowired
     private ConnectionCodeService connectionCodeService;
     
-    @Autowired
-    private GitSyncService gitSyncService;
+//    @Autowired
+//    private GitSyncService gitSyncService;
 
     public FileMetadata saveFileMetadata(String fileName, long fileSize, String contentType, 
                                          String uploaderEmail, String uploaderName, String connectionCode) {
@@ -42,7 +42,7 @@ public class FileService {
         FileMetadata savedMetadata = fileMetadataRepository.save(fileMetadata);
         
         // Tự động commit và đồng bộ khi file được tải lên
-        gitSyncService.syncChanges("Upload file: " + fileName + " with code: " + connectionCode);
+//        gitSyncService.syncChanges("Upload file: " + fileName + " with code: " + connectionCode);
         
         return savedMetadata;
     }
@@ -63,7 +63,7 @@ public class FileService {
             
             // Tự động commit và đồng bộ khi có file hết hạn bị xóa
             int count = expiredFiles.size();
-            gitSyncService.syncChanges("Deleted " + count + " expired file(s)");
+//            gitSyncService.syncChanges("Deleted " + count + " expired file(s)");
             
             logger.info("Deleted {} expired files and synced changes", count);
         }
@@ -114,7 +114,7 @@ public class FileService {
             fileMetadataRepository.save(fileMetadata);
             
             // Tự động commit và đồng bộ khi file được tải xuống
-            gitSyncService.syncChanges("Downloaded file: " + fileMetadata.getFileName() + " with code: " + fileMetadata.getConnectionCode());
+//            gitSyncService.syncChanges("Downloaded file: " + fileMetadata.getFileName() + " with code: " + fileMetadata.getConnectionCode());
             
             logger.info("File [{}] has been downloaded and changes synced", fileMetadata.getFileName());
         }

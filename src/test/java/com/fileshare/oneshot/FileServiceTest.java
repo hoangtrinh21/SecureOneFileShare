@@ -31,9 +31,6 @@ public class FileServiceTest {
     @Mock
     private ConnectionCodeService connectionCodeService;
     
-    @Mock
-    private GitSyncService gitSyncService;
-
     @InjectMocks
     private FileService fileService;
 
