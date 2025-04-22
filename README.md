@@ -20,6 +20,13 @@
 
 Thay thế `[DEV_DOMAIN]` và `[PROD_DOMAIN]` bằng tên miền thực tế của ứng dụng Replit của bạn.
 
+URL chuyển hướng cho phiên bản hiện tại:
+```
+https://406ebfde-f841-4fef-babf-ecfd5bb1766c-00-25zqc6tgeci9y.picard.replit.dev/login/oauth2/code/google
+```
+
+Lưu ý: Nếu bạn triển khai ứng dụng với tên miền khác, bạn cần cập nhật URL chuyển hướng trong Google Cloud Console.
+
 ## Biến môi trường
 
 Ứng dụng yêu cầu các biến môi trường sau:
