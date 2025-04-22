@@ -26,12 +26,15 @@ public class WebSecurityConfig {
             .authorizeRequests(authorizeRequests ->
                 authorizeRequests
                     .requestMatchers("/", "/download", "/download/**", "/api/download/**", "/css/**", "/js/**").permitAll()
+                    .requestMatchers("/login/oauth2/code/google").permitAll() // Cho phép callback URL không cần xác thực
                     .anyRequest().authenticated()
             )
             .oauth2Login(oauth2Login ->
                 oauth2Login
                     .loginPage("/")
+                    .defaultSuccessUrl("/", true) // Luôn chuyển về trang chủ sau khi đăng nhập thành công
                     .successHandler(oAuthSuccessHandler)
+                    .permitAll()
             )
             .logout(logout ->
                 logout
