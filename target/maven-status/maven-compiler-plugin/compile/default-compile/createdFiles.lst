@@ -7,6 +7,7 @@ com/fileshare/oneshot/service/FailedAttemptService.class
 com/fileshare/oneshot/model/User.class
 com/fileshare/oneshot/scheduler/FileCleanupScheduler.class
 com/fileshare/oneshot/config/WebSecurityConfig.class
+com/fileshare/oneshot/service/GitSyncService.class
 com/fileshare/oneshot/OneShotApplication.class
 com/fileshare/oneshot/util/ConnectionCodeGenerator.class
 com/fileshare/oneshot/controller/FileController.class

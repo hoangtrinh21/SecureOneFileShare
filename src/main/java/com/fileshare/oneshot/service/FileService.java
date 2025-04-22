@@ -4,6 +4,8 @@ import com.fileshare.oneshot.model.FileMetadata;
 import com.fileshare.oneshot.repository.FileMetadataRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -12,12 +14,17 @@ import java.util.UUID;
 
 @Service
 public class FileService {
+    
+    private static final Logger logger = LoggerFactory.getLogger(FileService.class);
 
     @Autowired
     private FileMetadataRepository fileMetadataRepository;
     
     @Autowired
     private ConnectionCodeService connectionCodeService;
+    
+    @Autowired
+    private GitSyncService gitSyncService;
 
     public FileMetadata saveFileMetadata(String fileName, long fileSize, String contentType, 
                                          String uploaderEmail, String uploaderName, String connectionCode) {
@@ -32,7 +39,12 @@ public class FileService {
         fileMetadata.setExpiryTime(LocalDateTime.now().plusMinutes(10));
         fileMetadata.setDownloaded(false);
         
-        return fileMetadataRepository.save(fileMetadata);
+        FileMetadata savedMetadata = fileMetadataRepository.save(fileMetadata);
+        
+        // Tự động commit và đồng bộ khi file được tải lên
+        gitSyncService.syncChanges("Upload file: " + fileName + " with code: " + connectionCode);
+        
+        return savedMetadata;
     }
 
     public Optional<FileMetadata> findById(String id) {
@@ -45,7 +57,16 @@ public class FileService {
 
     public void deleteExpiredFiles() {
         List<FileMetadata> expiredFiles = fileMetadataRepository.findAllExpired();
-        expiredFiles.forEach(file -> fileMetadataRepository.delete(file.getId()));
+        
+        if (!expiredFiles.isEmpty()) {
+            expiredFiles.forEach(file -> fileMetadataRepository.delete(file.getId()));
+            
+            // Tự động commit và đồng bộ khi có file hết hạn bị xóa
+            int count = expiredFiles.size();
+            gitSyncService.syncChanges("Deleted " + count + " expired file(s)");
+            
+            logger.info("Deleted {} expired files and synced changes", count);
+        }
     }
 
     public String createDownloadToken(FileMetadata fileMetadata) {
@@ -91,6 +112,11 @@ public class FileService {
             fileMetadata.setDownloadTokenExpiry(null);
             
             fileMetadataRepository.save(fileMetadata);
+            
+            // Tự động commit và đồng bộ khi file được tải xuống
+            gitSyncService.syncChanges("Downloaded file: " + fileMetadata.getFileName() + " with code: " + fileMetadata.getConnectionCode());
+            
+            logger.info("File [{}] has been downloaded and changes synced", fileMetadata.getFileName());
         }
     }
     
