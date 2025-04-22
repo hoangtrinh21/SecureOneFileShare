@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OneShot - Chia sẻ tệp an toàn</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>OneShot File Sharing</h1>
+            <p>Chia sẻ tệp an toàn chỉ với một lần tải xuống</p>
+        </header>
+        
+        <main>
+            <div class="info-box">
+                <h2>Cách thức hoạt động</h2>
+                <ol>
+                    <li>Đăng nhập với tài khoản Google của bạn</li>
+                    <li>Tải lên tệp bạn muốn chia sẻ (tối đa 2MB)</li>
+                    <li>Nhận mã kết nối duy nhất và chia sẻ với người nhận</li>
+                    <li>Họ nhập mã và tải xuống tệp một lần duy nhất</li>
+                </ol>
+                <p><strong>Lưu ý:</strong> Mã kết nối sẽ hết hạn sau 10 phút, và tệp sẽ tự động bị xóa sau khi được tải xuống.</p>
+            </div>
+            
+            <div class="action-buttons">
+                <a href="{{ url_for('google_login') }}" class="btn primary">Đăng nhập với Google</a>
+                <a href="{{ url_for('download_page') }}" class="btn secondary">Tải xuống tệp</a>
+            </div>
+        </main>
+        
+        <footer>
+            <p>&copy; 2025 OneShot File Sharing - Bảo vệ quyền riêng tư của bạn</p>
+        </footer>
+    </div>
+</body>
+</html>

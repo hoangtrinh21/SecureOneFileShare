@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.web.cors.CorsConfiguration;
@@ -25,8 +26,10 @@ public class WebSecurityConfig {
         http
             .authorizeRequests(authorizeRequests ->
                 authorizeRequests
-                    .requestMatchers("/", "/download", "/download/**", "/api/download/**", "/css/**", "/js/**").permitAll()
+                    .requestMatchers("/", "/download", "/download/**", "/api/download/**", "/css/**", "/js/**", "/favicon.ico").permitAll()
                     .requestMatchers("/login/oauth2/code/google").permitAll() // Cho phép callback URL không cần xác thực
+                    .requestMatchers("/login/oauth2/code/**").permitAll() // Cho phép tất cả các URL callback OAuth
+                    .requestMatchers("/oauth2/**").permitAll() // Cho phép tất cả các URL OAuth
                     .anyRequest().authenticated()
             )
             .oauth2Login(oauth2Login ->
@@ -34,13 +37,18 @@ public class WebSecurityConfig {
                     .loginPage("/")
                     .defaultSuccessUrl("/", true) // Luôn chuyển về trang chủ sau khi đăng nhập thành công
                     .successHandler(oAuthSuccessHandler)
+                    .failureUrl("/?error=oauth_failure") // URL khi đăng nhập thất bại
                     .permitAll()
             )
             .logout(logout ->
                 logout
                     .logoutSuccessUrl("/")
+                    .clearAuthentication(true)
+                    .invalidateHttpSession(true)
                     .permitAll()
             )
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.ALWAYS))
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()));
         

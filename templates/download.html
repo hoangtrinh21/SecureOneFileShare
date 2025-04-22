@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OneShot - Tải xuống tệp</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Tải xuống tệp</h1>
+            <div class="nav-links">
+                <a href="{{ url_for('index') }}">Trang chủ</a>
+            </div>
+        </header>
+        
+        <main>
+            <div class="download-container">
+                <div id="download-form-container">
+                    <h2>Nhập mã kết nối</h2>
+                    <form id="download-form">
+                        <div class="input-container">
+                            <input type="text" id="connection-code" name="connectionCode" placeholder="Nhập mã kết nối" required>
+                        </div>
+                        <button type="submit" class="btn primary">Kiểm tra</button>
+                    </form>
+                </div>
+                
+                <div id="lockout-container" class="hidden">
+                    <h2>Quá nhiều lần thử không thành công</h2>
+                    <p>Vui lòng thử lại sau: <span id="lockout-timer">00:00</span></p>
+                </div>
+                
+                <div id="file-info-container" class="hidden">
+                    <h2>Thông tin tệp</h2>
+                    <div class="file-details">
+                        <p><strong>Tên tệp:</strong> <span id="file-name"></span></p>
+                        <p><strong>Kích thước:</strong> <span id="file-size"></span></p>
+                    </div>
+                    
+                    <div class="expiration-info">
+                        <p>Liên kết tải xuống sẽ hết hạn sau:</p>
+                        <div id="expiration-timer" class="timer">03:00</div>
+                    </div>
+                    
+                    <button id="download-button" class="btn primary">Tải xuống</button>
+                    
+                    <p class="note">Lưu ý: Tệp này sẽ chỉ có thể tải xuống một lần duy nhất và sẽ bị xóa vĩnh viễn sau khi tải xuống.</p>
+                </div>
+                
+                <div id="download-error" class="hidden">
+                    <h2>Lỗi</h2>
+                    <p id="error-message"></p>
+                    <button id="try-again" class="btn secondary">Thử lại</button>
+                </div>
+            </div>
+        </main>
+        
+        <footer>
+            <p>&copy; 2025 OneShot File Sharing - Bảo vệ quyền riêng tư của bạn</p>
+        </footer>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/download.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OneShot - Tải lên tệp</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Tải lên tệp</h1>
+            <div class="user-info">
+                Xin chào, {{ current_user.name }} | <a href="{{ url_for('logout') }}">Đăng xuất</a>
+            </div>
+        </header>
+        
+        <main>
+            <div class="upload-container">
+                <form id="upload-form" enctype="multipart/form-data">
+                    <div class="file-input-container">
+                        <label for="file-upload" class="file-label">
+                            <span class="file-icon">&#128193;</span>
+                            <span id="file-name">Chọn tệp để tải lên (tối đa 2MB)</span>
+                        </label>
+                        <input type="file" id="file-upload" name="file" accept="*/*" required>
+                    </div>
+                    
+                    <div class="progress-container hidden">
+                        <div class="progress-bar">
+                            <div class="progress" id="upload-progress"></div>
+                        </div>
+                        <div class="progress-text">0%</div>
+                    </div>
+                    
+                    <button type="submit" class="btn primary">Tải lên</button>
+                </form>
+                
+                <div id="upload-result" class="hidden">
+                    <h2>Tệp đã được tải lên thành công!</h2>
+                    <div class="code-container">
+                        <p>Mã kết nối của bạn:</p>
+                        <div class="connection-code" id="connection-code"></div>
+                        <button id="copy-code" class="btn secondary">Sao chép</button>
+                    </div>
+                    
+                    <div class="expiration-info">
+                        <p>Mã này sẽ hết hạn sau:</p>
+                        <div id="expiration-timer" class="timer">10:00</div>
+                    </div>
+                    
+                    <p class="note">Chia sẻ mã này với người bạn muốn chia sẻ tệp. Họ sẽ có thể tải xuống tệp một lần duy nhất trước khi nó bị xóa vĩnh viễn.</p>
+                    
+                    <button id="upload-another" class="btn primary">Tải lên tệp khác</button>
+                </div>
+            </div>
+        </main>
+        
+        <footer>
+            <p>&copy; 2025 OneShot File Sharing - Bảo vệ quyền riêng tư của bạn</p>
+        </footer>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/upload.js') }}"></script>
+</body>
+</html>

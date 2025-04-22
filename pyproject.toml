@@ -4,6 +4,9 @@ version = "0.1.0"
 description = "Add your description here"
 requires-python = ">=3.11"
 dependencies = [
+    "authlib>=1.5.2",
+    "flask>=3.1.0",
     "flask-login>=0.6.3",
     "oauthlib>=3.2.2",
+    "requests>=2.32.3",
 ]
