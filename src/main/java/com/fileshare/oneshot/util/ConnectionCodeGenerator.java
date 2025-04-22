@@ -39,11 +39,12 @@ public class ConnectionCodeGenerator {
     
     /**
      * Calculates the 1% limit of possible codes for a given length
+     * Theo yêu cầu, chỉ sử dụng 1% số lượng mã tối đa của độ dài tương ứng
      * 
      * @param length The length of the code
      * @return The 1% limit of possible codes
      */
     public static long calculateOnePercentLimit(int length) {
-        return (long) (calculateMaxCodes(length) * 0.01);
+        return Math.max(1, (long) (calculateMaxCodes(length) * 0.01));
     }
 }

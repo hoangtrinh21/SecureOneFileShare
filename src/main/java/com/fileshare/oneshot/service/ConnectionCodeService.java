@@ -37,11 +37,12 @@ public class ConnectionCodeService {
         
         // Calculate the minimum code length needed
         int length = 1;
-        double maxAllowedCount = Math.pow(62, length) * 0.01; // Only use 1% of available codes
+        // Sử dụng phương thức từ ConnectionCodeGenerator để tính toán giới hạn 1%
+        long maxAllowedCount = ConnectionCodeGenerator.calculateOnePercentLimit(length);
         
         while (activeFileCount > maxAllowedCount) {
             length++;
-            maxAllowedCount = Math.pow(62, length) * 0.01;
+            maxAllowedCount = ConnectionCodeGenerator.calculateOnePercentLimit(length);
         }
         
         return length;

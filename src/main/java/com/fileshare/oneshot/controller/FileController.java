@@ -81,6 +81,7 @@ public class FileController {
             Map<String, String> response = new HashMap<>();
             response.put("connectionCode", connectionCode);
             response.put("fileName", file.getOriginalFilename());
+            response.put("expiryTime", fileMetadata.getExpiryTime().toString());
             return ResponseEntity.ok(response);
             
         } catch (Exception e) {
