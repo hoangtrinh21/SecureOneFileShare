@@ -1,0 +1,35 @@
+modules = ["java", "java-17"]
+
+[nix]
+channel = "stable-24_05"
+packages = ["maven"]
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "OneShot File Sharing App"
+
+[[workflows.workflow]]
+name = "OneShot File Sharing App"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "export GOOGLE_CLIENT_ID=dummy-client-id && export GOOGLE_CLIENT_SECRET=dummy-client-secret && mvn spring-boot:run -Dspring-boot.run.arguments=\"--server.port=5000\""
+waitForPort = 5000
+
+[deployment]
+run = ["sh", "-c", "export GOOGLE_CLIENT_ID=dummy-client-id && export GOOGLE_CLIENT_SECRET=dummy-client-secret && mvn spring-boot:run -Dspring-boot.run.arguments=\"--server.port=5000\""]
