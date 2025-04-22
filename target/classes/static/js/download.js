@@ -40,12 +40,12 @@ document.addEventListener('DOMContentLoaded', function() {
         errorMessage.classList.add('hidden');
         
         // Verify the connection code
-        fetch('/api/download/verify', {
+        fetch('/download', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+                'Content-Type': 'application/json',
             },
-            body: `connectionCode=${encodeURIComponent(code)}`
+            body: JSON.stringify({connectionCode: code})
         })
         .then(response => {
             if (!response.ok) {
